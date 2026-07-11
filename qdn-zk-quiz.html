@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>黔东南事业单位综合知识 · 刷题模式</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f7fa;color:#333;line-height:1.6;-webkit-tap-highlight-color:transparent}
+.header{background:linear-gradient(135deg,#1a3c5e,#2980b9);color:#fff;padding:16px;text-align:center;position:sticky;top:0;z-index:100}
+.header h1{font-size:1.1rem;margin-bottom:4px}
+.stats{display:flex;justify-content:space-around;background:#fff;padding:12px 8px;border-bottom:1px solid #e8e8e8;position:sticky;top:56px;z-index:99;font-size:.82rem}
+.stat-item{text-align:center}.stat-item .val{font-size:1.2rem;font-weight:700;color:#2980b9}.stat-item .label{color:#888;font-size:.72rem}
+.filters{display:flex;gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid #eee;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+.filters button{padding:6px 14px;border:1px solid #ddd;border-radius:16px;background:#fff;font-size:.78rem;cursor:pointer;flex-shrink:0}
+.filters button.on{background:#2980b9;color:#fff;border-color:#2980b9}
+.progress-bar{height:3px;background:#eee}.progress-bar .fill{height:100%;background:linear-gradient(90deg,#27ae60,#2ecc71);transition:width .3s}
+.question-area{padding:16px 12px 80px;max-width:640px;margin:0 auto}
+.q-card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.q-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.q-num{font-weight:700;color:#2c3e50;font-size:.95rem}
+.q-year{padding:2px 8px;border-radius:10px;font-size:.7rem;color:#fff;background:#2980b9}
+.q-type{padding:2px 8px;border-radius:10px;font-size:.7rem;color:#fff;background:#8e44ad}
+.q-text{font-size:.92rem;margin-bottom:12px;color:#333}
+.options{display:flex;flex-direction:column;gap:8px}
+.option{padding:12px;border:2px solid #e8e8e8;border-radius:10px;cursor:pointer;transition:all .2s;font-size:.88rem;position:relative}
+.option:active{background:#f0f8ff}
+.option.selected{border-color:#2980b9;background:#e8f4fd}
+.option.correct{border-color:#27ae60;background:#f0fff4;color:#27ae60}
+.option.wrong{border-color:#e74c3c;background:#fff5f5;color:#e74c3c}
+.option .check{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-weight:700}
+.submit-btn{display:block;width:100%;padding:14px;background:linear-gradient(135deg,#2980b9,#1a6daa);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:16px;transition:opacity .2s}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed}
+.submit-btn:active:not(:disabled){opacity:.8}
+.explanation{display:none;margin-top:12px;padding:12px;background:#f8f9fa;border-radius:8px;font-size:.84rem;border-left:3px solid #27ae60}
+.explanation.show{display:block}
+.explanation b{color:#27ae60}
+.nav-btns{display:flex;gap:10px;margin-top:12px}
+.nav-btn{flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;background:#fff;font-size:.85rem;cursor:pointer;text-align:center}
+.nav-btn:active{background:#f0f0f0}
+.nav-btn.primary{background:#2980b9;color:#fff;border-color:#2980b9}
+.result-card{display:none;text-align:center;padding:30px 20px;background:#fff;border-radius:12px;margin-bottom:16px}
+.result-card.show{display:block}
+.result-card .score{font-size:2.5rem;font-weight:700;color:#2980b9}
+.result-card .detail{margin-top:8px;color:#666;font-size:.9rem}
+.empty-state{text-align:center;padding:40px 20px;color:#999}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📚 黔东南事业单位综合知识 · 刷题</h1>
+  <p style="font-size:.75rem;opacity:.8">近5年真题 · 交互作答 · 即时反馈</p>
+</div>
+
+<div class="stats">
+  <div class="stat-item"><div class="val" id="answered">0</div><div class="label">已答</div></div>
+  <div class="stat-item"><div class="val" id="correct">0</div><div class="label">正确</div></div>
+  <div class="stat-item"><div class="val" id="accuracy">0%</div><div class="label">正确率</div></div>
+  <div class="stat-item"><div class="val" id="remaining">143</div><div class="label">剩余</div></div>
+</div>
+
+<div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
+
+<div class="filters" id="filters">
+  <button class="on" data-filter="all">全部</button>
+  <button data-filter="single">单选</button>
+  <button data-filter="multi">多选</button>
+  <button data-filter="judge">判断</button>
+  <button data-filter="fill">填空</button>
+  <button data-filter="short">简答</button>
+  <button data-filter="essay">论述</button>
+  <button data-filter="case">案例</button>
+</div>
+
+<div class="question-area" id="questionArea">
+  <div class="result-card" id="resultCard">
+    <div style="font-size:1.1rem;font-weight:600;margin-bottom:8px">📊 答题统计</div>
+    <div class="score" id="finalScore">0%</div>
+    <div class="detail" id="finalDetail">已完成 0 / 143 题</div>
+    <button class="submit-btn" style="margin-top:16px;max-width:200px;margin-left:auto;margin-right:auto" onclick="resetAll()">重新开始</button>
+  </div>
+  <div id="questionContainer"></div>
+</div>
+
+<script>
+// 题目数据（从原始HTML提取）
+const questions = [
+  // 单选题 1-74
+  {id:1,type:'single',year:'2021',q:'国家主席习近平于2021年9月15日到驻陕西部队某基地视察调研时强调，要聚焦备战打仗，注重发展指挥等现代信息化手段，结合地方特色。这体现了（）的关系。',opts:['A. 思维和存在的关系','B. 矛盾的主要方面和次要方面','C. 主要矛盾和次要矛盾','D. 矛盾的绝对性和相对性'],ans:'D',exp:'矛盾具有绝对性和相对性。注重现代信息化手段体现了矛盾的绝对性，结合地方特色体现了矛盾的相对性。'},
+  {id:2,type:'single',year:'2021',q:'价值转化为价格的前提条件是（）。',opts:['A. 劳动产品成为商品','B. 货币出现','C. 私有制产生','D. 社会分工'],ans:'A',exp:'价值是凝结在商品中的无差别人类劳动，劳动产品只有成为商品才具有价值并转化为价格。'},
+  {id:3,type:'single',year:'2021',q:'十九大报告中提到，（）是近代以来中华民族伟大复兴的三大里程碑。',opts:['A. 建立中国共产党、成立中华人民共和国、推进改革开放和中国特色社会主义事业','B. 辛亥革命、新中国成立、改革开放','C. 五四运动、新中国成立、改革开放','D. 中国共产党成立、抗日战争胜利、新中国成立'],ans:'A',exp:'十九大报告明确三大里程碑。'},
+  {id:4,type:'single',year:'2021',q:'患者在诊疗活动中受到损害，医疗机构不承担赔偿责任的是（）。',opts:['A. 医务人员在抢救垂危患者时已尽到合理诊疗义务','B. 患者对医务人员执业资格有异议','C. 限于当时医疗水平难以诊疗','D. 患者不配合医疗机构诊疗'],ans:'B',exp:'《民法典》第1224条规定三种免责情形：①患者不配合；②紧急抢救已尽合理义务；③限于当时医疗水平。B不在此列。'},
+  {id:5,type:'single',year:'2021',q:'出租车司机为救伤者违章驾驶，发生事故后应如何处理？（）',opts:['A. 综合分析不同价值观做出判断','B. 司机违章仅受罚款','C. 应主要使用道德手段解决','D. 法律价值之间没有冲突'],ans:'A',exp:'法的价值具有冲突性，需综合考量生命权与交通秩序等不同法价值之间关系。'},
+  {id:6,type:'single',year:'2022',q:'二十大报告指出，中国共产党的中心任务是（）。',opts:['A. 团结带领全国各族人民全面建成社会主义现代化强国、实现第二个百年奋斗目标，以中国式现代化全面推进中华民族伟大复兴','B. 全面建成小康社会','C. 实现共同富裕','D. 建设社会主义现代化国家'],ans:'A',exp:'二十大报告明确中心任务。'},
+  {id:7,type:'single',year:'2022',q:'资本是能带来剩余价值的价值附着物。剩余价值的产生是因为（）。',opts:['A. 劳动力成为特殊商品','B. 机器设备先进','C. 资本家善于经营','D. 市场供求关系'],ans:'A',exp:'劳动力成为商品是剩余价值产生的前提条件，劳动力能创造比自身价值更大的价值。'},
+  {id:8,type:'single',year:'2022',q:'二十大报告指出，要坚持（）加强党的思想建设。',opts:['A. 用党的创新理论武装全党','B. 加强组织建设','C. 推进反腐倡廉','D. 完善制度体系'],ans:'A',exp:'二十大报告强调用党的创新理论武装全党是思想建设的根本任务。'},
+  {id:9,type:'single',year:'2022',q:'基本经济制度探索主要体现为（）。',opts:['A. 公有制为主体、多种所有制经济共同发展','B. 社会主义市场经济体制','C. 按劳分配为主体','D. 改革开放'],ans:'A',exp:'公有制为主体、多种所有制经济共同发展是我国基本经济制度的核心内容。'},
+  {id:10,type:'single',year:'2022',q:'根据公共管理学知识，属于提供公共物品的是（）。',opts:['A. 私人医院服务','B. 社会保障和福利','C. 餐饮服务','D. 咨询服务'],ans:'B',exp:'公共物品具有非排他性和非竞争性，社会保障和福利属于公共物品。'},
+  {id:11,type:'single',year:'2023',q:'"新事物必然战胜旧事物"体现的是（）原理。',opts:['A. 发展原理','B. 否定之否定原理','C. 对立统一规律','D. 普遍联系原理'],ans:'A',exp:'发展的实质是新事物的产生和旧事物的灭亡，新事物战胜旧事物是发展的必然规律。'},
+  {id:12,type:'single',year:'2023',q:'关于关系的客观性，下列说法正确的是（）。',opts:['A. 客观关系由个人主观决定','B. 人可以随意创造客观关系','C. 客观关系不以人的意志为转移','D. 客观关系会随时代变化而消失'],ans:'C',exp:'关系具有客观性，是事物本身固有的联系，不以人的意志为转移。'},
+  {id:13,type:'single',year:'2023',q:'习总书记强调全面依法治国要抓重点，抓重点就是（）。',opts:['A. 加强党的领导','B. 健全法律制度体系','C. 提升司法公信力','D. 建设法治政府'],ans:'B',exp:'健全法律制度体系是全面依法治国的重点。'},
+  {id:14,type:'single',year:'2023',q:'下列关于黔东南州的说法，错误的是（）。',opts:['A. 黔东南是全国苗族侗族人口最集中的地区','B. 镇远古城位于黔东南州','C. 黔东南有"歌舞海洋"的美誉','D. 黔东南州府凯里市是贵州省的省会'],ans:'D',exp:'贵州省省会是贵阳市，凯里市是黔东南苗族侗族自治州的州府。'},
+  {id:15,type:'single',year:'2023',q:'社会主义金融市场的基础是（）。',opts:['A. 资金市场','B. 证券市场','C. 外汇市场','D. 期货市场'],ans:'A',exp:'资金市场（货币市场和资本市场）是金融市场的基础。'},
+  {id:16,type:'single',year:'2024',q:'党的二十大报告指出，以（）全面推进中华民族伟大复兴。',opts:['A. 中国特色社会主义道路','B. 中国式现代化','C. 高质量发展','D. 改革开放'],ans:'B',exp:'二十大明确以中国式现代化全面推进中华民族伟大复兴。'},
+  {id:17,type:'single',year:'2024',q:'下列属于我国国家机构组织和活动原则的是（）。',opts:['A. 人民主权原则','B. 民主集中制原则','C. 社会主义法治原则','D. 以上都是'],ans:'D',exp:'我国国家机构的组织和活动原则包括人民主权、民主集中制、社会主义法治等原则。'},
+  {id:18,type:'single',year:'2024',q:'下列行政处罚中属于行为罚的是（）。',opts:['A. 行政拘留','B. 罚款','C. 责令停产停业','D. 没收违法所得'],ans:'C',exp:'行为罚是限制或剥夺违法者特定行为能力的处罚。A人身罚，B、D财产罚。'},
+  {id:19,type:'single',year:'2024',q:'下列诗句与季节对应正确的是（）。',opts:['A. "接天莲叶无穷碧，映日荷花别样红"——春季','B. "停车坐爱枫林晚，霜叶红于二月花"——秋季','C. "忽如一夜春风来，千树万树梨花开"——春季','D. "墙角数枝梅，凌寒独自开"——夏季'],ans:'B',exp:'A为夏季荷花，B为秋季枫叶，C为冬季雪景（以梨花喻雪），D为冬季梅花。'},
+  {id:20,type:'single',year:'2024',q:'下列不属于我国四大名著的是（）。',opts:['A. 《三国演义》','B. 《封神演义》','C. 《水浒传》','D. 《红楼梦》'],ans:'B',exp:'四大名著为《三国演义》《水浒传》《西游记》《红楼梦》。《封神演义》不在其列。'},
+  {id:21,type:'single',year:'2024',q:'以下属于可再生能源的是（）。',opts:['A. 煤炭','B. 石油','C. 天然气','D. 太阳能'],ans:'D',exp:'太阳能可不断再生利用。煤炭、石油、天然气为非可再生化石能源。'},
+  {id:22,type:'single',year:'2024',q:'市场机制的核心机制是（）。',opts:['A. 价格机制','B. 供求机制','C. 竞争机制','D. 风险机制'],ans:'A',exp:'价格机制是市场机制中最核心的机制，通过价格信号引导资源配置。'},
+  {id:23,type:'single',year:'2024',q:'下列关于公文格式的说法，正确的是（）。',opts:['A. 公文必须加盖印章','B. 发文字号由发文机关代字、年份、发文顺序号组成','C. 公文的主送机关必须是一个','D. 公文的成文日期以印发日期为准'],ans:'B',exp:'A错误，普发性公文可不盖印；C错误，可多个主送；D错误，成文日期以签发日期为准。'},
+  {id:24,type:'single',year:'2024',q:'下列关于道德的说法，错误的是（）。',opts:['A. 道德是一种社会意识形态','B. 道德通过社会舆论、传统习惯和内心信念来维系','C. 道德具有强制性','D. 道德是调整人与人、人与社会关系的行为规范'],ans:'C',exp:'道德不具有国家强制性，靠内心信念和舆论维系。法律才具有国家强制性。'},
+  {id:25,type:'single',year:'2024',q:'社会主义核心价值观中，国家层面的价值目标是（）。',opts:['A. 富强、民主、文明、和谐','B. 自由、平等、公正、法治','C. 爱国、敬业、诚信、友善','D. 公平、正义、团结、友爱'],ans:'A',exp:'国家层面：富强民主文明和谐；社会层面：自由平等公正法治；个人层面：爱国敬业诚信友善。'},
+  {id:26,type:'single',year:'2024',q:'下列不属于贵州世界自然遗产地的是（）。',opts:['A. 荔波喀斯特','B. 赤水丹霞','C. 梵净山','D. 黄果树瀑布'],ans:'D',exp:'黄果树瀑布为国家级风景名胜区，非世界自然遗产。ABC均为世界自然遗产。'},
+  {id:27,type:'single',year:'2024',q:'马克思主义哲学的直接理论来源是（）。',opts:['A. 古希腊罗马哲学','B. 德国古典哲学','C. 英国古典政治经济学','D. 英法空想社会主义'],ans:'B',exp:'德国古典哲学（黑格尔辩证法、费尔巴哈唯物主义）是马克思主义哲学的直接理论来源。'},
+  {id:28,type:'single',year:'2024',q:'下列体现"实践是认识的基础"这一观点的是（）。',opts:['A. 秀才不出门，全知天下事','B. 纸上得来终觉浅，绝知此事要躬行','C. 人有多大胆，地有多大产','D. 人的理性为自然界立法'],ans:'B',exp:'B出自陆游，强调亲身实践的重要性。A强调间接经验；C是主观唯心主义；D是康德唯心主义观点。'},
+  {id:29,type:'single',year:'2024',q:'下列关于通货膨胀的说法，正确的是（）。',opts:['A. 通货膨胀是指物价水平持续下降','B. 通货膨胀会导致货币贬值','C. 通货膨胀有利于债权人','D. 抑制通胀应采取扩张性财政政策'],ans:'B',exp:'通胀指物价持续上涨，货币购买力下降即贬值。A错；C通胀利于债务人；D应用紧缩性政策。'},
+  {id:30,type:'single',year:'2024',q:'东航（）2024年1月9日开始执行上海虹桥至北京大兴航线商业航班。',opts:['A. 沈括号大飞机','B. C919大飞机','C. AG600大飞机','D. G20大飞机'],ans:'B',exp:'C919是国产大飞机，2024年1月执飞第二条定期商业航线。'},
+  {id:31,type:'single',year:'2024',q:'农业农村部消息，2023年脱贫劳动力务工总规模达（）人。',opts:['A. 3000万','B. 3200万','C. 3397万','D. 3500万'],ans:'C',exp:'2023年脱贫劳动力务工总规模达3397万人。'},
+  {id:32,type:'single',year:'2024',q:'2022年3月18日，我国海拔最高的百万千瓦级水电站（）6台机组全部投产发电。',opts:['A. 白鹤滩水电站','B. 乌东德水电站','C. 溪洛渡水电站','D. 两河口水电站'],ans:'D',exp:'两河口水电站位于四川雅江县，海拔约3000米，是我国海拔最高的百万千瓦级水电站。'},
+  {id:33,type:'single',year:'2024',q:'"四史"间的逻辑关系：①是②源头③④是②成果。①②③④分别是（）。',opts:['A. 党史/社会主义发展史/新中国史/改革开放史','B. 党史/新中国史/社会主义发展史/改革开放史','C. 新中国史/党史/改革开放史/社会主义发展史','D. 社会主义发展史/党史/新中国史/改革开放史'],ans:'A',exp:'党史是社会主义发展史的源头，新中国史和改革开放史是社会主义发展史的重大成果。'},
+  {id:34,type:'single',year:'2025',q:'贵州黔东南州被誉为"世界苗侗文化遗产保留核心地"，不属于黔东南特色文化的是（）。',opts:['A. 侗族大歌文化','B. 苗族飞歌文化','C. 客家围屋文化','D. 鼓楼建筑文化'],ans:'C',exp:'客家围屋是广东、福建、江西等客家地区的特色建筑文化，不属于黔东南。'},
+  {id:35,type:'single',year:'2025',q:'黔东南州的森林覆盖率在全省处于较高水平，主要森林植被类型不包括（）。',opts:['A. 亚热带常绿阔叶林','B. 温带落叶阔叶林','C. 针叶林','D. 竹林'],ans:'B',exp:'黔东南属亚热带湿润气候，以常绿阔叶林、针叶林和竹林为主。温带落叶阔叶林不在该区域。'},
+  {id:36,type:'single',year:'2025',q:'黔东南州的哪条河流是长江水系的重要支流（）。',opts:['A. 都柳江','B. 清水江','C. 打狗河','D. 蒙江'],ans:'B',exp:'清水江为沅江上游，属长江水系。都柳江属珠江水系。'},
+  {id:37,type:'single',year:'2025',q:'最能体现黔东南当地民俗风情的活动是（）。',opts:['A. 泼水节','B. 那达慕大会','C. 姊妹节','D. 火把节'],ans:'C',exp:'姊妹节是黔东南苗族传统节日。泼水节为傣族（云南），那达慕为蒙古族（内蒙古），火把节为彝族（云南、四川）。'},
+  {id:38,type:'single',year:'2025',q:'不属于黔东南重点发展扶贫产业的是（）。',opts:['A. 蓝莓种植','B. 中药材种植','C. 钢铁冶炼','D. 乡村旅游'],ans:'C',exp:'黔东南以生态农业和旅游为主，钢铁冶炼项目不符合当地绿色发展定位。'},
+  {id:39,type:'single',year:'2025',q:'关于黔东南州教育事业发展，说法错误的是（）。',opts:['A. 学前教育普及率不断提高','B. 职业教育为产业提供了人才支持','C. 高等教育资源丰富，有多所知名综合性大学','D. 义务教育巩固率保持在较高水平'],ans:'C',exp:'黔东南州高等教育资源相对薄弱，凯里学院是主要本科院校，暂无多所知名综合性大学。'},
+  {id:40,type:'single',year:'2025',q:'黔东南苗族侗族自治州的州府是（）。',opts:['A. 凯里市','B. 都匀市','C. 兴义市','D. 安顺市'],ans:'A',exp:'凯里为黔东南州府；都匀为黔南州府；兴义为黔西南州府；安顺为地级市。'},
+  {id:41,type:'single',year:'2025',q:'我国第一部纪传体通史是（）。',opts:['A. 《汉书》','B. 《史记》','C. 《资治通鉴》','D. 《春秋》'],ans:'B',exp:'《史记》为西汉司马迁著，中国第一部纪传体通史。A为断代史，C为编年体，D为编年体。'},
+  {id:42,type:'single',year:'2025',q:'下列关于贵州气候特点的描述，正确的是（）。',opts:['A. 全年高温多雨','B. 冬暖夏凉，湿润多雨','C. 冬季寒冷干燥，夏季高温多雨','D. 全年干旱少雨'],ans:'B',exp:'贵州属亚热带湿润季风气候，"天无三日晴"，冬暖夏凉、湿润多雨。'},
+  {id:43,type:'single',year:'2025',q:'以下哪种民族节日是黔东南苗族的重要节日（）。',opts:['A. 火把节','B. 泼水节','C. 芦笙节','D. 开斋节'],ans:'C',exp:'芦笙节是苗族最盛大的传统节日。火把节属彝族，泼水节属傣族，开斋节属回族等穆斯林民族。'},
+  {id:44,type:'single',year:'2025',q:'我国宪法规定，中华人民共和国的根本制度是（）。',opts:['A. 社会主义制度','B. 人民代表大会制度','C. 多党合作和政治协商制度','D. 民主集中制'],ans:'A',exp:'社会主义制度是我国的根本制度。B是根本政治制度，C是基本政治制度。'},
+  {id:45,type:'single',year:'2025',q:'我国最大的淡水湖是（）。',opts:['A. 鄱阳湖','B. 洞庭湖','C. 太湖','D. 巢湖'],ans:'A',exp:'鄱阳湖位于江西省，是我国最大的淡水湖。青海湖是最大的咸水湖。'},
+  {id:46,type:'single',year:'2022',q:'（ ）是生命的物质基础，是构成细胞的基本有机物，是生命活动的主要承担者。',opts:['A. 蛋白质','B. 氨基酸','C. 维生素','D. 液态水'],ans:'A',exp:'蛋白质以氨基酸为单位组成，是构成细胞的基本有机物，是生命活动的主要承担者。'},
+  {id:47,type:'single',year:'2022',q:'下列关于支线飞机的说法，正确的是（）。',opts:['A. 支线飞机载客多、设备先进，是航空运输主力','B. 支线飞机主要用于大城市与中小城市之间的区域飞行','C. 干线飞机只能在小型机场起降','D. 支线飞机航程在5000千米以上'],ans:'B',exp:'100座以下、航程3000千米内为支线飞机，用于大城市与中小城市间飞行；干线飞机才是主力。'},
+  {id:48,type:'single',year:'2022',q:'1984年12月26日，中国首次南极考察编队抵达南极洲，并举行了南极（ ）的奠基典礼。',opts:['A. 中山站','B. 长城站','C. 昆仑站','D. 泰山站'],ans:'B',exp:'1984年12月31日在乔治王岛举行中国南极长城站奠基典礼。'},
+  {id:49,type:'single',year:'2022',q:'北京时间2021年9月16日8时56分，神舟十二号载人飞船与（ ）成功实施分离。',opts:['A. 天问一号','B. 嫦娥五号','C. 天和核心舱','D. 风云四号'],ans:'C',exp:'神舟十二号与空间站天和核心舱分离，航天员乘组在轨90天，刷新纪录。'},
+  {id:50,type:'single',year:'2022',q:'按发文目的划分，函可以分为（ ）。',opts:['A. 公函和便函','B. 发函和复函','C. 商洽函和询问函','D. 答复函和请求函'],ans:'B',exp:'按发文目的分，函分为发函（主动提出事项）和复函（回复对方）。'},
+  {id:51,type:'single',year:'2022',q:'截至2021年3月，贵州省辖（ ）个地级行政区。',opts:['A. 3个','B. 6个','C. 9个','D. 15个'],ans:'C',exp:'贵州辖6个地级市、3个自治州，共9个地级行政区。'},
+  {id:52,type:'single',year:'2022',q:'中国共产党开创的农村包围城市、武装夺取政权的革命道路，最后要（ ）。',opts:['A. 联合工人阶级','B. 发动学生运动','C. 夺取全国胜利','D. 推翻反动政府'],ans:'C',exp:'农村包围城市，最后夺取全国胜利。'},
+  {id:53,type:'single',year:'2022',q:'发文字号中的发文顺序号用（ ）标识。',opts:['A. 阿拉伯数码','B. 罗马数码','C. 英文数码','D. 汉字数码'],ans:'A',exp:'发文字号顺序号用阿拉伯数码，不编虚位，不加"第"字。'},
+  {id:54,type:'single',year:'2022',q:'通告中，必须依法发布、限定范围不能超过发文机关权限的是（ ）的通告。',opts:['A. 咨询性','B. 建议性','C. 强制性','D. 告知性'],ans:'C',exp:'强制性（规定性）通告必须依法发布，约束对象须遵守。'},
+  {id:55,type:'single',year:'2022',q:'涉密公文密级和保密期限一般用（ ）标识。',opts:['A. 2号宋体','B. 4号宋体','C. 5号黑体','D. 3号黑体'],ans:'D',exp:'《党政机关公文格式》规定密级用3号黑体字，顶格编排在版心左上角第二行。'},
+  {id:56,type:'single',year:'2022',q:'1895年日本强迫清政府签订（ ），割让台湾岛及澎湖列岛。',opts:['A. 《南京条约》','B. 《烟台条约》','C. 《马关条约》','D. 《北京条约》'],ans:'C',exp:'《马关条约》割让辽东半岛（后三国干涉还辽）、台湾及澎湖列岛给日本。'},
+  {id:57,type:'single',year:'2022',q:'（ ）是一个复杂的思维操作过程，是信息收集、加工，最后做出判断、得出结论的过程。',opts:['A. 反馈','B. 组织','C. 计划','D. 决策'],ans:'D',exp:'决策是信息搜集、加工，最终做出判断和结论的复杂思维过程。'},
+  {id:58,type:'single',year:'2022',q:'（ ）是中国四大发明之一，西汉发明、东汉蔡伦改进。',opts:['A. 造船术','B. 造枪术','C. 造纸术','D. 造炮术'],ans:'C',exp:'造纸术西汉发明，东汉蔡伦改进为"蔡侯纸"。'},
+  {id:59,type:'single',year:'2022',q:'行政效率原则要求行政机关力争以最短时间、最少人员、最低耗费办最多的事，体现的是（ ）原则。',opts:['A. 经济原则','B. 协同原则','C. 效率原则','D. 时间原则'],ans:'C',exp:'效率原则即力求以最小代价取得最大效益。'},
+  {id:60,type:'single',year:'2022',q:'胡某随意殴打他人致轻微伤，构成（ ）。',opts:['A. 正当防卫','B. 防卫过当','C. 寻衅滋事罪','D. 聚众斗殴罪'],ans:'C',exp:'胡某随意殴打他人情节恶劣，构成寻衅滋事罪。'},
+  {id:61,type:'single',year:'2022',q:'（ ）是中国创建最早、规模最大的卫星发射中心，也是唯一的载人航天发射中心。',opts:['A. 酒泉卫星发射中心','B. 太原卫星发射中心','C. 西昌卫星发射中心','D. 文昌卫星发射中心'],ans:'A',exp:'酒泉是中国创建最早、规模最大的综合型导弹卫星发射中心，也是唯一载人航天发射中心。'},
+  {id:62,type:'single',year:'2022',q:'管理层次越多，协调工作急剧增加、互相扯皮问题随之出现，这是（ ）的特点。',opts:['A. 扁平式组织结构','B. 高耸式组织结构','C. 同心圆式组织结构','D. 多核心式组织结构'],ans:'B',exp:'高耸型组织结构管理层次多，协调工作急剧增加。'},
+  {id:63,type:'single',year:'2022',q:'民国二年（1913年）贵州全省分为（ ）。',opts:['A. 黔中道、黔北道、黔西道','B. 黔中道、黔东道、黔西道','C. 黔东道、黔南道、黔西道','D. 黔中道、黔东道、黔北道'],ans:'B',exp:'1913年贵州改府厅州为县，全省分黔中道、黔东道、黔西道。'},
+  {id:64,type:'single',year:'2022',q:'党的二十大报告指出，教育、科技、人才是全面建设社会主义现代化国家的基础性、战略性支撑，必须坚持（ ）是第一生产力。',opts:['A. 人才','B. 科技','C. 创新','D. 教育'],ans:'B',exp:'二十大报告：科技是第一生产力，人才是第一资源，创新是第一动力。'},
+  {id:65,type:'single',year:'2023',q:'我国根本政治制度是（ ）。',opts:['A. 人民代表大会制度','B. 中国共产党领导的多党合作和政治协商制度','C. 民族区域自治制度','D. 基层群众自治制度'],ans:'A',exp:'人民代表大会制度是根本政治制度；BCD是基本政治制度。'},
+  {id:66,type:'single',year:'2023',q:'下列关于黔东南州地理位置，正确的是（ ）。',opts:['A. 位于贵州省西北部','B. 位于贵州省东南部，与湖南、广西接壤','C. 位于贵州省中部','D. 位于贵州省西南部'],ans:'B',exp:'黔东南州位于贵州东南部，东邻湖南，南接广西。'},
+  {id:67,type:'single',year:'2023',q:'（ ）被誉为"中国苗侗风情第一州"，西江千户苗寨在其境内。',opts:['A. 黔东南州','B. 黔南州','C. 黔西南州','D. 铜仁市'],ans:'A',exp:'西江千户苗寨位于黔东南州雷山县，是世界最大苗族聚居村寨。'},
+  {id:68,type:'single',year:'2023',q:'新民主主义革命的动力包括无产阶级、农民阶级、城市小资产阶级和（ ）。',opts:['A. 民族资产阶级','B. 地主阶级','C. 官僚资产阶级','D. 买办阶级'],ans:'A',exp:'革命动力：工人、农民、小资产阶级、民族资产阶级。'},
+  {id:69,type:'single',year:'2024',q:'2024年是中华人民共和国成立（ ）周年。',opts:['A. 70','B. 75','C. 80','D. 100'],ans:'B',exp:'1949年成立，2024年为75周年。'},
+  {id:70,type:'single',year:'2024',q:'下列关于行政复议，说法正确的是（ ）。',opts:['A. 行政复议是行政机关内部的层级监督制度','B. 行政复议只能向法院申请','C. 行政复议决定不具有法律效力','D. 行政复议不审查具体行政行为是否合理'],ans:'A',exp:'行政复议是上级行政机关对下级具体行政行为进行合法性与适当性审查的监督制度。'},
+  {id:71,type:'single',year:'2024',q:'数字人民币是由（ ）发行的数字形式的法定货币。',opts:['A. 商业银行','B. 中国人民银行','C. 财政部','D. 银保监会'],ans:'B',exp:'数字人民币由中国人民银行发行，属于M0（现金类）数字化。'},
+  {id:72,type:'single',year:'2025',q:'2025年中央一号文件聚焦的主题是（ ）。',opts:['A. 全面推进乡村振兴','B. 科技创新','C. 扩大内需','D. 绿色发展'],ans:'A',exp:'近年中央一号文件持续聚焦全面推进乡村振兴、加快建设农业强国。'},
+  {id:73,type:'single',year:'2025',q:'黔东南州主要的少数民族是（ ）。',opts:['A. 苗族、侗族','B. 布依族、水族','C. 彝族、白族','D. 壮族、瑶族'],ans:'A',exp:'黔东南以苗族、侗族为主体少数民族。'},
+  {id:74,type:'single',year:'2025',q:'下列关于贵州"村超"，说法正确的是（ ）。',opts:['A. 村超发源于黔东南州榕江县','B. 村超发源于贵阳市','C. 村超是职业足球联赛','D. 村超与黔东南无关'],ans:'A',exp:'"村超"（乡村足球超级联赛）发源于黔东南州榕江县，火爆出圈。'},
+  // 多选题 75-89
+  {id:75,type:'multi',year:'2024',q:'属于习近平新时代中国特色社会主义思想"十个明确"的有（）。',opts:['A. 最本质特征是中国共产党领导','B. 总任务是实现社会主义现代化和中华民族伟大复兴','C. 全面深化改革总目标是完善和发展中国特色社会主义制度','D. 大国外交要服务民族复兴，推动构建人类命运共同体'],ans:'ABCD',exp:''},
+  {id:76,type:'multi',year:'2024',q:'关于物权说法正确的有（）。',opts:['A. 物权是一种对世权','B. 物权具有排他性','C. 物权包括所有权、用益物权和担保物权','D. 物权的客体主要是物'],ans:'ABCD',exp:''},
+  {id:77,type:'multi',year:'2024',q:'属于唐宋八大家的有（）。',opts:['A. 韩愈','B. 柳宗元','C. 欧阳修','D. 苏轼'],ans:'ABCD',exp:'唐宋八大家：唐·韩愈、柳宗元；宋·欧阳修、三苏、王安石、曾巩。'},
+  {id:78,type:'multi',year:'2024',q:'关于计算机病毒说法正确的有（）。',opts:['A. 计算机病毒是一种程序','B. 计算机病毒具有传染性','C. 计算机病毒具有潜伏性','D. 计算机病毒可以通过网络传播'],ans:'ABCD',exp:''},
+  {id:79,type:'multi',year:'2024',q:'属于贵州特色美食的有（）。',opts:['A. 酸汤鱼','B. 丝娃娃','C. 羊肉粉','D. 过桥米线'],ans:'ABC',exp:'过桥米线是云南特色美食，ABC均为贵州特色。'},
+  {id:80,type:'multi',year:'2024',q:'关于公文文种说法正确的有（）。',opts:['A. 通知适用于发布传达要求下级执行的事项','B. 通报适用于表彰先进、批评错误、传达精神','C. 请示适用于向上级请求指示批准','D. 报告适用于向上级汇报工作反映情况'],ans:'ABCD',exp:''},
+  {id:81,type:'multi',year:'2024',q:'关于道德与法律的关系正确的有（）。',opts:['A. 道德与法律都是调整行为的规范','B. 道德靠舆论维系，法律靠国家强制力','C. 道德与法律在某些情况下会相互转化','D. 道德调整范围比法律更广'],ans:'ABCD',exp:''},
+  {id:82,type:'multi',year:'2024',q:'属于市场失灵表现的有（）。',opts:['A. 垄断','B. 外部性','C. 公共物品','D. 信息不对称'],ans:'ABCD',exp:''},
+  {id:83,type:'multi',year:'2024',q:'关于黔东南旅游资源正确的有（）。',opts:['A. 西江千户苗寨是世界最大苗族聚居村寨','B. 肇兴侗寨是全国最大侗寨之一','C. 有雷公山国家级自然保护区','D. 杉木河景区是著名漂流胜地'],ans:'ABCD',exp:''},
+  {id:84,type:'multi',year:'2024',q:'关于哲学基本问题正确的有（）。',opts:['A. 哲学基本问题是思维和存在关系','B. 包括思维和存在何者为第一性','C. 包括思维和存在有无同一性','D. 不同回答划分唯物主义和唯心主义'],ans:'ABCD',exp:''},
+  {id:85,type:'multi',year:'2022',q:'根据货币的商品价值可分为实物货币和形式货币，下列属于实物货币的有（ ）。',opts:['A. 羊','B. 金条','C. 债券','D. 股票'],ans:'AB',exp:'实物货币本身是有价值的商品，如羊、贵金属；债券、股票属形式货币。'},
+  {id:86,type:'multi',year:'2022',q:'系统原理的基本要求主要包括（ ）。',opts:['A. 保持系统的一致性','B. 保持系统的关联性','C. 保持系统各层功能的完整性','D. 保持系统与环境的适应性'],ans:'ABCD',exp:'系统原理包括整体性、关联性、层次性、环境适应性等。'},
+  {id:87,type:'multi',year:'2022',q:'民国二年（1913年）贵州地方政区调整，全省分为（ ）。',opts:['A. 黔中道','B. 黔北道','C. 黔东道','D. 黔西道'],ans:'ACD',exp:'1913年贵州改府厅州为县，全省分黔中道、黔东道、黔西道。'},
+  {id:88,type:'multi',year:'2022',q:'系统原理主张运用系统观点分析管理活动，其要点包括（ ）。',opts:['A. 整体性原理','B. 动态性原理','C. 开放性原理','D. 综合性原理'],ans:'ABCD',exp:'系统原理包括整体性、动态性、开放性、适应性、综合性原理。'},
+  {id:89,type:'multi',year:'2023',q:'习近平新时代中国特色社会主义思想的世界观和方法论（"六个必须坚持"）包括（ ）。',opts:['A. 必须坚持人民至上','B. 必须坚持问题导向','C. 必须坚持系统观念','D. 必须坚持胸怀天下'],ans:'ABCD',exp:'六个必须坚持：人民至上、自信自立、守正创新、问题导向、系统观念、胸怀天下。'},
+  // 判断题 90-119
+  {id:90,type:'judge',year:'2024',q:'习近平新时代中国特色社会主义思想是当代中国马克思主义、二十一世纪马克思主义。',ans:'✓',exp:''},
+  {id:91,type:'judge',year:'2024',q:'法律是治国之重器，良法是善治之前提。',ans:'✓',exp:''},
+  {id:92,type:'judge',year:'2024',q:'我国的国家结构形式是单一制。',ans:'✓',exp:''},
+  {id:93,type:'judge',year:'2024',q:'"采菊东篱下，悠然见南山"出自陶渊明《饮酒·其五》。',ans:'✓',exp:''},
+  {id:94,type:'judge',year:'2024',q:'计算机的中央处理器（CPU）主要由运算器和控制器组成。',ans:'✓',exp:''},
+  {id:95,type:'judge',year:'2024',q:'社会主义市场经济体制使市场在资源配置中发挥决定性作用。',ans:'✓',exp:''},
+  {id:96,type:'judge',year:'2024',q:'公文的密级分为绝密、机密、秘密三级。',ans:'✓',exp:''},
+  {id:97,type:'judge',year:'2024',q:'道德具有历史性，不同时代有不同的道德观念和道德标准。',ans:'✓',exp:''},
+  {id:98,type:'judge',year:'2024',q:'贵州是我国唯一没有平原支撑的省份。',ans:'✓',exp:'贵州地貌以高原山地为主，"八山一水一分田"。'},
+  {id:99,type:'judge',year:'2024',q:'实践是检验真理的唯一标准。',ans:'✓',exp:'由真理的本性和实践的特点决定。'},
+  {id:100,type:'judge',year:'2025',q:'中国共产党是中国特色社会主义事业的领导核心。',ans:'✓',exp:''},
+  {id:101,type:'judge',year:'2025',q:'基本经济制度是公有制为主体、多种所有制经济共同发展。',ans:'✓',exp:''},
+  {id:102,type:'judge',year:'2025',q:'我国主要宗教有佛教、道教、伊斯兰教和基督教。',ans:'✓',exp:''},
+  {id:103,type:'judge',year:'2025',q:'我国主要河流有长江、黄河、珠江和黑龙江。',ans:'✓',exp:''},
+  {id:104,type:'judge',year:'2025',q:'我国主要山脉有喜马拉雅山脉、昆仑山脉和秦岭山脉。',ans:'✓',exp:''},
+  {id:105,type:'judge',year:'2025',q:'主要地形区有东北平原、华北平原和长江中下游平原。',ans:'✓',exp:''},
+  {id:106,type:'judge',year:'2025',q:'我国地势西高东低，呈三级阶梯状分布。',ans:'✓',exp:''},
+  {id:107,type:'judge',year:'2025',q:'我国主要科技成就有载人航天、深海探测和人工智能。',ans:'✓',exp:''},
+  {id:108,type:'judge',year:'2025',q:'我国主要农产品有粮食、棉花和油料。',ans:'✓',exp:''},
+  {id:109,type:'judge',year:'2025',q:'主要工业基地有辽中南、京津唐和珠三角工业基地。',ans:'✓',exp:''},
+  {id:110,type:'judge',year:'2022',q:'支线飞机由于载客多、设备先进，是航空运输的主力，但它只能在设备齐全的大型机场起降。',ans:'✗',exp:'干线飞机才是主力，支线飞机用于中小城市间区域飞行。'},
+  {id:111,type:'judge',year:'2022',q:'1984年12月26日，中国首次南极考察编队抵达南极洲。',ans:'✓',exp:''},
+  {id:112,type:'judge',year:'2022',q:'北京时间2021年9月16日8时56分，神舟十二号载人飞船与空间站天和核心舱成功实施分离。',ans:'✓',exp:''},
+  {id:113,type:'judge',year:'2022',q:'贵州境内地势西高东低，平均海拔在1100米左右。',ans:'✓',exp:'贵州位于云贵高原，平均海拔约1100米，素有"八山一水一分田"之说。'},
+  {id:114,type:'judge',year:'2022',q:'1949年12月26日，贵州省人民政府正式成立。',ans:'✓',exp:'1949年11月15日解放贵阳，12月26日成立贵州省人民政府。'},
+  {id:115,type:'judge',year:'2022',q:'政府职能是建立行政组织和进行机构设置、人员配备的最基本依据。',ans:'✓',exp:''},
+  {id:116,type:'judge',year:'2022',q:'农业农村部等6部门联合印发《"十四五"全国农业绿色发展规划》，是我国首部农业绿色发展专项规划。',ans:'✓',exp:''},
+  {id:117,type:'judge',year:'2023',q:'黔东南州是全国苗族、侗族人口最集中的自治州。',ans:'✓',exp:''},
+  {id:118,type:'judge',year:'2024',q:'"村超"（乡村足球超级联赛）发源于贵州省黔东南州榕江县。',ans:'✓',exp:''},
+  {id:119,type:'judge',year:'2025',q:'西江千户苗寨位于贵州省黔东南州雷山县。',ans:'✓',exp:''},
+  // 填空题 120-129
+  {id:120,type:'fill',year:'2025',q:'中华人民共和国的成立标志着____的胜利。',ans:'新民主主义革命',exp:''},
+  {id:121,type:'fill',year:'2025',q:'社会主义核心价值观包括____、____、____、____。',ans:'富强、民主、文明、和谐',exp:''},
+  {id:122,type:'fill',year:'2025',q:'我国的基本政治制度是____。',ans:'中国共产党领导的多党合作和政治协商制度',exp:''},
+  {id:123,type:'fill',year:'2025',q:'我国地势____，呈____分布。',ans:'西高东低，三级阶梯状',exp:''},
+  {id:124,type:'fill',year:'2025',q:'____是我国最长的河流。',ans:'长江',exp:''},
+  {id:125,type:'fill',year:'2025',q:'我国最大的内陆咸水湖是____。',ans:'青海湖',exp:''},
+  {id:126,type:'fill',year:'2025',q:'我国的主要粮食作物是____和____。',ans:'水稻、小麦',exp:''},
+  {id:127,type:'fill',year:'2025',q:'我国的主要矿产资源有____、____、____。',ans:'煤炭、石油、天然气',exp:''},
+  {id:128,type:'fill',year:'2025',q:'我国第一部社会主义类型的宪法是____年宪法。',ans:'1954',exp:''},
+  {id:129,type:'fill',year:'2025',q:'中国共产党成立的时间是1921年____月____日。',ans:'7月23日',exp:''},
+  // 简答题 130-138
+  {id:130,type:'short',year:'2024',q:'简述习近平新时代中国特色社会主义思想的重大意义。',ans:'①政治意义——提供坚强政治指引；②理论意义——当代中国马克思主义、二十一世纪马克思主义，实现马克思主义中国化时代化新飞跃；③实践意义——为全面建设社会主义现代化国家提供行动指南；④世界意义——为解决人类共同问题贡献中国智慧和中国方案。',exp:''},
+  {id:131,type:'short',year:'2024',q:'简述如何加强公民道德建设。',ans:'①加强思想引领，培育践行社会主义核心价值观；②强化教育引导，贯穿家庭、学校、社会教育全过程；③注重实践养成，开展志愿服务、文明创建等道德实践活动；④完善制度保障，以法治承载道德理念；⑤营造良好社会氛围，宣传道德模范和先进事迹。',exp:''},
+  {id:132,type:'short',year:'2024',q:'简述市场机制的作用。',ans:'①优化资源配置，通过价格波动引导生产要素流动；②调节生产和消费，促使产销趋于平衡；③推动技术创新和进步，竞争机制促使企业不断创新；④促进企业改善经营管理。',exp:''},
+  {id:133,type:'short',year:'2024',q:'简述公文写作的基本要求。',ans:'①符合党和国家路线、方针、政策和法律法规；②内容准确、客观、真实，表达清晰明确；③格式规范，严格按《党政机关公文处理工作条例》要求；④语言简洁、庄重、平实、得体；⑤针对性强，根据发文目的和受文对象有的放矢。',exp:''},
+  {id:134,type:'short',year:'2024',q:'简述贵州黔东南州的民族文化特色。',ans:'①建筑：苗族吊脚楼、侗族鼓楼和风雨桥；②服饰：色彩鲜艳、图案精美；③歌舞：苗族芦笙舞、飞歌，侗族大歌（世界非遗）；④节日：苗族牯藏节、姊妹节，侗族萨玛节；⑤饮食：苗族酸汤鱼、侗族油茶等。',exp:''},
+  {id:135,type:'short',year:'2025',q:'简述我国的基本国策。',ans:'保护环境、节约资源、对外开放、科教兴国、可持续发展、依法治国、计划生育、国防建设等。',exp:''},
+  {id:136,type:'short',year:'2025',q:'简述我国的民族政策。',ans:'民族平等、民族团结、各民族共同繁荣。国家保障各少数民族的合法权利和利益，维护和发展各民族的平等、团结、互助关系。',exp:''},
+  {id:137,type:'short',year:'2025',q:'简述我国的教育政策。',ans:'教育优先发展、素质教育、教育公平、教育改革。实行九年义务教育，加强职业教育，提高高等教育质量。',exp:''},
+  {id:138,type:'short',year:'2025',q:'简述我国的科技政策。',ans:'科技创新、科技体制改革、科技人才培养。加强基础研究、应用研究和科技成果转化，提高科技自主创新能力。',exp:''},
+  // 论述题 139-141
+  {id:139,type:'essay',year:'2024',q:'论述如何在新时代传承和弘扬中华优秀传统文化。',ans:'加强教育传承：将传统文化纳入国民教育体系，增加课程比重，加强教师培训。推动文化创新：创造性转化和创新性发展，利用数字化、新媒体等呈现传播传统文化。加强文化交流：开展对外文化交流，展示中华文化魅力，吸收借鉴其他优秀文化成果。营造社会氛围：政府加大支持力度，媒体加强宣传，鼓励日常生活中践行传统美德。',exp:''},
+  {id:140,type:'essay',year:'2024',q:'论述在乡村振兴战略中如何发挥农村基层党组织的作用。',ans:'组织引领：发挥领导核心作用，制定乡村振兴规划，加强党组织自身建设。产业发展：引导推动特色产业，组织农民成立专业合作社，加强市场对接。人才培养：加强本地农民教育培训，吸引外出务工人员、大学生等返乡创业。生态保护：宣传环保知识，整治农村环境，推动绿色发展。文化建设：丰富精神文化生活，挖掘保护文化遗产，培育文明乡风。',exp:''},
+  {id:141,type:'essay',year:'2024',q:'论述如何提高政府公共服务能力以满足人民日益增长的美好生活需要。',ans:'优化公共服务供给体系：加大教育、医疗、就业、社保等领域投入，提供多样化个性化服务。推进公共服务信息化：搭建在线服务平台，推行"一网通办""最多跑一次"等改革。加强人才队伍建设：提高专业素质和服务意识，建立合理薪酬和激励机制。强化监督评估：建立监督机制，引入第三方评估，畅通群众反馈渠道。促进多元合作：鼓励社会力量参与，通过购买服务、公私合营等方式提高效率和质量。',exp:''},
+  // 案例分析题 142-143
+  {id:142,type:'case',year:'2024',q:'某村为发展乡村旅游修建道路，部分村民以施工影响房屋安全为由阻拦。如果你是村党支部书记，如何处理？',ans:'①第一时间赶赴现场安抚村民情绪，承诺认真对待问题；②组织施工方和专家进行实地勘察评估，邀请有资质机构检测房屋；③若确有影响，要求施工方调整方案、采取保护措施；④与村民深入沟通，解释道路修建对乡村旅游发展的重要意义；⑤对合理诉求积极回应，协调赔偿损失；⑥加强施工监督，邀请村民代表参与，增加透明度。',exp:''},
+  {id:143,type:'case',year:'2024',q:'某企业存在环境污染问题，被责令整改但不彻底，仍有偷排情况，引起周边居民不满。作为环保部门工作人员，采取哪些措施？',ans:'①加大监管力度，增加检查频次，安排专人驻厂监督，运用在线监测设备；②依法严肃处理，收集证据，依据《环境保护法》严厉处罚，追究负责人法律责任；③要求企业制定切实可行的整改方案，明确整改目标和措施；④及时向周边居民通报处理进展，回应群众关切。',exp:''}
+];
+
+// 状态管理
+let currentIndex = 0;
+let selectedOptions = [];
+let answered = {};
+let correctCount = 0;
+let currentFilter = 'all';
+
+// 获取过滤后的题目
+function getFilteredQuestions() {
+  if (currentFilter === 'all') return questions;
+  return questions.filter(q => q.type === currentFilter);
+}
+
+// 渲染题目
+function renderQuestion() {
+  const filtered = getFilteredQuestions();
+  if (filtered.length === 0) {
+    document.getElementById('questionContainer').innerHTML = '<div class="empty-state">该分类下暂无题目</div>';
+    return;
+  }
+  
+  if (currentIndex >= filtered.length) currentIndex = filtered.length - 1;
+  if (currentIndex < 0) currentIndex = 0;
+  
+  const q = filtered[currentIndex];
+  const isAnswered = answered[q.id];
+  const container = document.getElementById('questionContainer');
+  
+  let html = `<div class="q-card">
+    <div class="q-header">
+      <span class="q-num">第${currentIndex + 1}题</span>
+      <span class="q-year">${q.year}</span>
+      <span class="q-type">${getTypeName(q.type)}</span>
+    </div>
+    <div class="q-text">${q.q}</div>`;
+  
+  if (q.type === 'single' || q.type === 'multi') {
+    html += '<div class="options">';
+    q.opts.forEach((opt, idx) => {
+      const letter = String.fromCharCode(65 + idx);
+      let cls = 'option';
+      if (isAnswered) {
+        if (q.ans.includes(letter)) cls += ' correct';
+        else if (selectedOptions.includes(letter) && !q.ans.includes(letter)) cls += ' wrong';
+      } else if (selectedOptions.includes(letter)) {
+        cls += ' selected';
+      }
+      html += `<div class="${cls}" onclick="selectOption('${letter}')" ${isAnswered ? 'style="pointer-events:none"' : ''}>
+        ${opt}${isAnswered && q.ans.includes(letter) ? '<span class="check">✓</span>' : ''}${isAnswered && selectedOptions.includes(letter) && !q.ans.includes(letter) ? '<span class="check">✗</span>' : ''}
+      </div>`;
+    });
+    html += '</div>';
+  } else if (q.type === 'judge') {
+    html += '<div class="options">';
+    ['✓', '✗'].forEach(opt => {
+      let cls = 'option';
+      if (isAnswered) {
+        if (q.ans === opt) cls += ' correct';
+        else if (selectedOptions.includes(opt) && q.ans !== opt) cls += ' wrong';
+      } else if (selectedOptions.includes(opt)) {
+        cls += ' selected';
+      }
+      html += `<div class="${cls}" onclick="selectOption('${opt}')" ${isAnswered ? 'style="pointer-events:none"' : ''}>
+        ${opt === '✓' ? '正确' : '错误'}${isAnswered && q.ans === opt ? '<span class="check">✓</span>' : ''}${isAnswered && selectedOptions.includes(opt) && q.ans !== opt ? '<span class="check">✗</span>' : ''}
+      </div>`;
+    });
+    html += '</div>';
+  } else if (q.type === 'fill' || q.type === 'short' || q.type === 'essay' || q.type === 'case') {
+    html += `<div style="padding:12px;background:#f8f9fa;border-radius:8px;margin-bottom:8px">
+      <textarea id="answerInput" placeholder="请输入你的答案..." style="width:100%;min-height:80px;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:.88rem;resize:vertical" ${isAnswered ? 'disabled' : ''}></textarea>
+    </div>`;
+  }
+  
+  if (isAnswered) {
+    html += `<div class="explanation show">
+      <b>📖 答案：${q.ans}</b>
+      ${q.exp ? `<div style="margin-top:6px;color:#666">${q.exp}</div>` : ''}
+      ${q.type !== 'single' && q.type !== 'multi' && q.type !== 'judge' ? `<div style="margin-top:6px;color:#666"><b>参考答案：</b>${q.ans}</div>` : ''}
+    </div>`;
+  }
+  
+  if (!isAnswered) {
+    html += `<button class="submit-btn" id="submitBtn" onclick="submitAnswer()">提交答案</button>`;
+  }
+  
+  html += `<div class="nav-btns">
+    <button class="nav-btn" onclick="prevQuestion()" ${currentIndex === 0 ? 'disabled style="opacity:.5"' : ''}>上一题</button>
+    <button class="nav-btn primary" onclick="nextQuestion()" ${currentIndex === filtered.length - 1 ? 'disabled style="opacity:.5"' : ''}>下一题</button>
+  </div></div>`;
+  
+  container.innerHTML = html;
+  updateStats();
+}
+
+function getTypeName(type) {
+  const map = {single:'单选',multi:'多选',judge:'判断',fill:'填空',short:'简答',essay:'论述',case:'案例'};
+  return map[type] || type;
+}
+
+function selectOption(opt) {
+  const q = getFilteredQuestions()[currentIndex];
+  if (answered[q.id]) return;
+  
+  if (q.type === 'single') {
+    selectedOptions = [opt];
+  } else if (q.type === 'multi') {
+    const idx = selectedOptions.indexOf(opt);
+    if (idx > -1) selectedOptions.splice(idx, 1);
+    else selectedOptions.push(opt);
+  } else if (q.type === 'judge') {
+    selectedOptions = [opt];
+  }
+  renderQuestion();
+}
+
+function submitAnswer() {
+  const filtered = getFilteredQuestions();
+  const q = filtered[currentIndex];
+  
+  if (answered[q.id]) return;
+  
+  if (q.type === 'fill' || q.type === 'short' || q.type === 'essay' || q.type === 'case') {
+    const input = document.getElementById('answerInput');
+    if (!input || !input.value.trim()) {
+      alert('请先输入答案再提交');
+      return;
+    }
+  } else if (selectedOptions.length === 0) {
+    alert('请先选择答案再提交');
+    return;
+  }
+  
+  answered[q.id] = true;
+  
+  // 判分
+  if (q.type === 'single' || q.type === 'judge') {
+    if (selectedOptions[0] === q.ans) correctCount++;
+  } else if (q.type === 'multi') {
+    const sorted = [...selectedOptions].sort().join('');
+    if (sorted === q.ans) correctCount++;
+  }
+  
+  selectedOptions = [];
+  renderQuestion();
+}
+
+function prevQuestion() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    selectedOptions = [];
+    renderQuestion();
+  }
+}
+
+function nextQuestion() {
+  const filtered = getFilteredQuestions();
+  if (currentIndex < filtered.length - 1) {
+    currentIndex++;
+    selectedOptions = [];
+    renderQuestion();
+  }
+}
+
+function updateStats() {
+  const total = questions.length;
+  const answeredCount = Object.keys(answered).length;
+  const accuracy = answeredCount > 0 ? Math.round(correctCount / answeredCount * 100) : 0;
+  const remaining = total - answeredCount;
+  
+  document.getElementById('answered').textContent = answeredCount;
+  document.getElementById('correct').textContent = correctCount;
+  document.getElementById('accuracy').textContent = accuracy + '%';
+  document.getElementById('remaining').textContent = remaining;
+  document.getElementById('progressFill').style.width = (answeredCount / total * 100) + '%';
+}
+
+function resetAll() {
+  if (confirm('确定要重新开始吗？所有答题记录将被清除。')) {
+    currentIndex = 0;
+    selectedOptions = [];
+    answered = {};
+    correctCount = 0;
+    renderQuestion();
+  }
+}
+
+// 筛选按钮事件
+document.getElementById('filters').addEventListener('click', function(e) {
+  if (e.target.tagName === 'BUTTON') {
+    document.querySelectorAll('#filters button').forEach(b => b.classList.remove('on'));
+    e.target.classList.add('on');
+    currentFilter = e.target.dataset.filter;
+    currentIndex = 0;
+    selectedOptions = [];
+    renderQuestion();
+  }
+});
+
+// 初始化
+renderQuestion();
+</script>
+</body>
+</html>
